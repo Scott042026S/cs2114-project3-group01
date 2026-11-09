@@ -156,4 +156,6 @@ public class OrderQueueTest extends TestCase
         {
             caught = exception;
         }
-        assertNotNull("Expected " + expected.getSimpleName(), caught);
+        assertNotNull("Expected " + expected.getSimpleName(), caught); 
+    }
+}
