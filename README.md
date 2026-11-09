@@ -95,9 +95,9 @@ Each waiting order will show an estimated time until it's ready, based on its ow
 
 | File | Who worked on it | How |
 |---|---|---|
-| `Order.java` | Archer | Wrote |
-| `OrderQueue.java` | Archer | Wrote |
-| `OrderStatus.java` | Archer | Wrote |
+| `Order.java` | Archer | Drafted Outline with GenAI assistance, then wrote |
+| `OrderQueue.java` | Archer | Drafted Outline with GenAI assistance, then wrote |
+| `OrderStatus.java` | Archer | Drafted Outline with GenAI assistance, then wrote |
 | `OrderMode.java` | Prabhav | Wrote |
 | `OrderTrackerDisplay.java` | Prabhav | Wrote |
 | `OrderTrackerView.java` | Prabhav | Wrote |
