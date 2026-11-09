@@ -103,10 +103,10 @@ Each waiting order will show an estimated time until it's ready, based on its ow
 | `OrderTrackerView.java` | Prabhav | Wrote |
 | `OrderTrackerController.java` | Scott | drafted with minimal GenAI assistance, then revised to match Archer's and Prabhav's code |
 | `Main.java` | Scott | Wrote |
-| `OrderQueueTest.java` | Joshua |  |
-| `OrderTest.java` | Joshua |  |
+| `OrderQueueTest.java` | Joshua | Wrote, revised with GenAI Assistance|
+| `OrderTest.java` | Joshua | Wrote, revised with GenAI Assistance |
 | `README.md` | Scott | Drafted with GenAI assistance; reviewed by group. |
 
 ### GenAI note
 
-Scott used Claude to draft this README. He also gave it the spec and the group's `Order`, `OrderQueue`, view code, and controller, and asked if there were any errors. It found that the controller didn't catch the duplicate-order exception from `enqueue` (which would have crashed the app) and that the controller's description rules didn't match `Order`'s, so validation was changed to call `Order.validate()`. 
+Scott used Claude to draft this README. He also gave it the spec and the group's `Order`, `OrderQueue`, view code, and controller, and asked if there were any errors. It found that the controller didn't catch the duplicate-order exception from `enqueue` (which would have crashed the app) and that the controller's description rules didn't match `Order`'s, so validation was changed to call `Order.validate()`. Joshua used GenAI to ensure that the tests written were in line with the vision the group had during the scope and specification.
