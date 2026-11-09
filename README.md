@@ -23,7 +23,7 @@ A console app for a restaurant kitchen. Servers add orders by table number and d
 | `OrderQueue` storage | One `deque<Order>`. | Two deques, `rushOrders` and `normalOrders`, plus a `nextOrderId` counter. | Inserting a rush order behind earlier rushes isn't possible with deque operations alone. Two deques keep every operation O(1). |
 | Duplicate orders | Listed as a bad-input case with no response. | `enqueue` rejects an order if the same table already has an order with the same description waiting. |  
 | `OrderQueue` method names | Spec names: `enqueue`, `dequeue`, `peek`, `size`. | Both the spec names and the diagram names (`serveNext`, `getNextOrder`, `getWaitingCount`, `getQueue`) work. | The spec and the system diagram used different names, so both were kept. |
-| Tests | 
+| Tests | Gave targets for Order and OrderQueue | Wrote down a list of requirements the app would have to pass to be functional as tests. | Making sure that the test written in code align with the targets specified in the classes |
 
 ### Did the model really stand alone?
 
