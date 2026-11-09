@@ -72,6 +72,7 @@ Each waiting order will show an estimated time until it's ready, based on its ow
 | Rush limits (rush orders served in the order they were rushed) | **Done** in Prototype 1. |
 | Estimated wait times | **Committed** for Prototype 2. |
 | End-of-shift stats | **Committed** for Prototype 2. |
+| Small orders first (a short order can be served ahead of a much larger one, but a large order can be skipped at most twice so it never waits forever) | **Committed** for the final, after wait-time estimation, since it needs prep times to tell large orders from small ones. Changes `OrderQueue.dequeue()` and `OrderQueue.peek()`. |
 
 
 
