@@ -1,3 +1,8 @@
+
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.StringJoiner;
 import java.util.regex.Pattern;
 
 /**
@@ -35,6 +40,8 @@ public class Order {
     private final int orderId;
     private final int tableNumber;
     private final String description;
+    private final Map<String, Integer> items;
+    private final String notes;
     private final boolean rush;
     private boolean kitchenStarted;
     private OrderStatus status;
@@ -58,9 +65,64 @@ public class Order {
         this.orderId = orderId;
         this.tableNumber = tableNumber;
         this.description = description.trim();
+        this.items = Collections.emptyMap();
+        this.notes = "";
         this.rush = rush;
         this.kitchenStarted = false;
         this.status = OrderStatus.WAITING;
+    }
+
+    /**
+     * Creates an order from selected dishes and optional notes.
+     * @param orderId the positive order ID
+     * @param tableNumber the table number
+     * @param items dish names and quantities
+     * @param notes optional preparation instructions
+     * @param rush whether the order is urgent
+     */
+    public Order(int orderId, int tableNumber, Map<String, Integer> items,
+        String notes, boolean rush) {
+        if (orderId < 1) {
+            throw new IllegalArgumentException("Order ID must be 1 or more");
+        }
+        validateTable(tableNumber);
+        String cleanNotes = notes == null ? "" : notes.trim();
+        if (!cleanNotes.isEmpty()) {
+            validate(tableNumber, cleanNotes);
+        }
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException("Add at least one dish");
+        }
+        Map<String, Integer> copy = new LinkedHashMap<>();
+        StringJoiner description = new StringJoiner(", ");
+        for (Map.Entry<String, Integer> item : items.entrySet()) {
+            String dish = item.getKey();
+            Integer quantity = item.getValue();
+            validate(tableNumber, dish);
+            if (quantity == null || quantity < 1) {
+                throw new IllegalArgumentException("Quantity must be positive");
+            }
+            copy.put(dish, quantity);
+            description.add(quantity + " " + dish);
+        }
+        this.orderId = orderId;
+        this.tableNumber = tableNumber;
+        this.items = Collections.unmodifiableMap(copy);
+        this.notes = cleanNotes;
+        this.description = description.toString();
+        this.rush = rush;
+        kitchenStarted = false;
+        status = OrderStatus.WAITING;
+    }
+
+    /** @return the selected dishes and quantities, if supplied */
+    public Map<String, Integer> getItems() {
+        return items;
+    }
+
+    /** @return the optional preparation instructions */
+    public String getNotes() {
+        return notes;
     }
 
     /**
@@ -71,9 +133,7 @@ public class Order {
      * @throws IllegalArgumentException if either one is invalid
      */
     public static void validate(int tableNumber, String description) {
-        if (tableNumber < 1 || tableNumber > MAX_TABLES) {
-            throw new IllegalArgumentException(INVALID_TABLE_MESSAGE);
-        }
+        validateTable(tableNumber);
         if (description == null) {
             throw new IllegalArgumentException(INVALID_DESCRIPTION_MESSAGE);
         }
@@ -92,7 +152,16 @@ public class Order {
      * @throws IllegalArgumentException if either one is invalid
      */
     public void validate() {
-        validate(tableNumber, description);
+        // Structured orders are fully validated when constructed.
+        if (items.isEmpty()) {
+            validate(tableNumber, description);
+        }
+    }
+
+    private static void validateTable(int tableNumber) {
+        if (tableNumber < 1 || tableNumber > MAX_TABLES) {
+            throw new IllegalArgumentException(INVALID_TABLE_MESSAGE);
+        }
     }
 
     /**
