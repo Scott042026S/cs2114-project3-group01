@@ -1,20 +1,21 @@
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 /**
- * Provides a console-based interface for
- * the restaurant order tracking application.
+ * Provides a console-based interface for the restaurant order tracking
+ * application.
  *
  * @author Prabhav Agarwal
  */
-public class OrderTrackerView implements OrderTrackerDisplay
+public class OrderTrackerView
+    implements OrderTrackerDisplay
 {
-    //~ Fields
+    // ~ Fields
 
     private Scanner scanner;
 
-
-    //~ Constructors
+    // ~ Constructors
 
     /**
      * Creates the console view.
@@ -24,13 +25,14 @@ public class OrderTrackerView implements OrderTrackerDisplay
         scanner = new Scanner(System.in);
     }
 
+    // ~ Public Methods
 
-    //~ Public Methods
 
     /**
      * Starts the console application.
      *
-     * @param controller the application controller
+     * @param controller
+     *            the application controller
      */
     public void run(OrderTrackerController controller)
     {
@@ -39,12 +41,17 @@ public class OrderTrackerView implements OrderTrackerDisplay
         System.out.println("==================================");
         System.out.println("     RESTAURANT ORDER TRACKER");
         System.out.println("==================================");
+        controller.updateView();
 
         while (running)
         {
             displayMenu();
 
             System.out.print("Enter your choice: ");
+            if (!scanner.hasNextLine())
+            {
+                break;
+            }
             String choice = scanner.nextLine().trim();
 
             switch (choice)
@@ -66,6 +73,10 @@ public class OrderTrackerView implements OrderTrackerDisplay
                     break;
 
                 case "5":
+                    controller.handleEndShift();
+                    break;
+
+                case "6":
                     System.out.println("Exiting Order Tracker...");
                     running = false;
                     break;
@@ -89,16 +100,17 @@ public class OrderTrackerView implements OrderTrackerDisplay
         System.out.println("2. Serve Next Order");
         System.out.println("3. Start Cooking");
         System.out.println("4. Cancel Last Order");
-        System.out.println("5. Exit");
+        System.out.println("5. End Shift (show stats)");
+        System.out.println("6. Exit");
         System.out.println("------------------------------");
     }
 
 
     /**
-     * Collects order details from the user
-     * and sends them to the controller.
+     * Collects order details from the user and sends them to the controller.
      *
-     * @param controller the application controller
+     * @param controller
+     *            the application controller
      */
     private void addOrder(OrderTrackerController controller)
     {
@@ -106,10 +118,33 @@ public class OrderTrackerView implements OrderTrackerDisplay
         System.out.println("---------- ADD ORDER ----------");
 
         System.out.print("Enter table number: ");
-        String tableText = scanner.nextLine();
+        String tableText = readLine();
 
-        System.out.print("Enter order description: ");
-        String description = scanner.nextLine();
+        System.out.println();
+        System.out.println("Dishes:");
+        for (String line : controller.getMenuLines())
+        {
+            System.out.println(line);
+        }
+
+        List<String> dishChoices = new ArrayList<String>();
+        List<String> quantityTexts = new ArrayList<String>();
+        while (true)
+        {
+            System.out.print("Enter dish number (blank to finish): ");
+            String dish = readLine();
+            if (dish.trim().isEmpty())
+            {
+                break;
+            }
+            System.out.print("Enter quantity: ");
+            String quantity = readLine();
+            dishChoices.add(dish);
+            quantityTexts.add(quantity);
+        }
+
+        System.out.print("Enter notes (optional): ");
+        String notes = readLine();
 
         System.out.println();
         System.out.println("Select order mode:");
@@ -117,7 +152,7 @@ public class OrderTrackerView implements OrderTrackerDisplay
         System.out.println("2. Rush");
 
         System.out.print("Enter choice: ");
-        String modeChoice = scanner.nextLine().trim();
+        String modeChoice = readLine().trim();
 
         OrderMode mode = null;
 
@@ -130,24 +165,21 @@ public class OrderTrackerView implements OrderTrackerDisplay
             mode = OrderMode.RUSH;
         }
 
-        controller.handleAddOrder(
-            tableText,
-            description,
-            mode
-        );
+        controller
+            .handleAddOrder(tableText, dishChoices, quantityTexts, notes, mode);
     }
 
 
     /**
      * Displays the next order and waiting count.
      *
-     * @param nextOrder description of the next order
-     * @param waitingCount number of waiting orders
+     * @param nextOrder
+     *            description of the next order
+     * @param waitingCount
+     *            number of waiting orders
      */
     @Override
-    public void updateDisplay(
-        String nextOrder,
-        int waitingCount)
+    public void updateDisplay(String nextOrder, int waitingCount)
     {
         System.out.println();
         System.out.println("========= ORDER STATUS =========");
@@ -170,7 +202,8 @@ public class OrderTrackerView implements OrderTrackerDisplay
     /**
      * Displays a message received from the controller.
      *
-     * @param message success or error message
+     * @param message
+     *            success or error message
      */
     @Override
     public void showMessage(String message)
@@ -178,5 +211,16 @@ public class OrderTrackerView implements OrderTrackerDisplay
         System.out.println();
         System.out.println("[ORDER TRACKER] " + message);
         System.out.println();
+    }
+
+
+    /**
+     * Reads one line, or "" if input has ended.
+     *
+     * @return the line typed
+     */
+    private String readLine()
+    {
+        return scanner.hasNextLine() ? scanner.nextLine() : "";
     }
 }

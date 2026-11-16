@@ -4,14 +4,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * // -------------------------------------------------------------------------
- * /** Connects the console view to the order queue. The view collects input and
+ * Connects the console view to the order queue. The view collects input and
  * calls the handle methods, the controller validates the input, calls the
  * model, and sends updated information back through the OrderTrackerDisplay
  * interface.
- * 
- * @author scottpost
- * @version Nov 15, 2026
+ *
+ * @author Scott Post
+ * @version Nov 16, 2026
  */
 public class OrderTrackerController
 {
