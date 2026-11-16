@@ -1,5 +1,12 @@
+
 import java.util.Scanner;
 
+/**
+ * Provides a console-based interface for
+ * the restaurant order tracking application.
+ *
+ * @author Prabhav Agarwal
+ */
 public class OrderTrackerView implements OrderTrackerDisplay
 {
     //~ Fields
@@ -21,7 +28,7 @@ public class OrderTrackerView implements OrderTrackerDisplay
     //~ Public Methods
 
     /**
-     * Starts the console application menu.
+     * Starts the console application.
      *
      * @param controller the application controller
      */
@@ -29,9 +36,9 @@ public class OrderTrackerView implements OrderTrackerDisplay
     {
         boolean running = true;
 
-        System.out.println("================================");
-        System.out.println("   RESTAURANT ORDER TRACKER");
-        System.out.println("================================");
+        System.out.println("==================================");
+        System.out.println("     RESTAURANT ORDER TRACKER");
+        System.out.println("==================================");
 
         while (running)
         {
@@ -64,7 +71,7 @@ public class OrderTrackerView implements OrderTrackerDisplay
                     break;
 
                 default:
-                    showMessage("Invalid menu choice. Try again.");
+                    showMessage("Invalid choice. Please try again.");
                     break;
             }
         }
@@ -72,24 +79,24 @@ public class OrderTrackerView implements OrderTrackerDisplay
 
 
     /**
-     * Displays the main menu.
+     * Displays the available menu options.
      */
     public void displayMenu()
     {
         System.out.println();
-        System.out.println("---------- MENU ----------");
+        System.out.println("------------ MENU ------------");
         System.out.println("1. Add Order");
-        System.out.println("2. Serve Next");
+        System.out.println("2. Serve Next Order");
         System.out.println("3. Start Cooking");
-        System.out.println("4. Cancel Last");
+        System.out.println("4. Cancel Last Order");
         System.out.println("5. Exit");
-        System.out.println("--------------------------");
+        System.out.println("------------------------------");
     }
 
 
     /**
-     * Collects order information and sends it
-     * to the controller.
+     * Collects order details from the user
+     * and sends them to the controller.
      *
      * @param controller the application controller
      */
@@ -105,7 +112,7 @@ public class OrderTrackerView implements OrderTrackerDisplay
         String description = scanner.nextLine();
 
         System.out.println();
-        System.out.println("Select order type:");
+        System.out.println("Select order mode:");
         System.out.println("1. Normal");
         System.out.println("2. Rush");
 
@@ -124,26 +131,26 @@ public class OrderTrackerView implements OrderTrackerDisplay
         }
 
         controller.handleAddOrder(
-                tableText,
-                description,
-                mode
+            tableText,
+            description,
+            mode
         );
     }
 
 
     /**
-     * Updates the displayed order information.
+     * Displays the next order and waiting count.
      *
      * @param nextOrder description of the next order
      * @param waitingCount number of waiting orders
      */
     @Override
     public void updateDisplay(
-            String nextOrder,
-            int waitingCount)
+        String nextOrder,
+        int waitingCount)
     {
         System.out.println();
-        System.out.println("======= ORDER STATUS =======");
+        System.out.println("========= ORDER STATUS =========");
 
         if (nextOrder == null || nextOrder.isBlank())
         {
@@ -154,18 +161,16 @@ public class OrderTrackerView implements OrderTrackerDisplay
             System.out.println("Next Order: " + nextOrder);
         }
 
-        System.out.println(
-                "Waiting Orders: " + waitingCount
-        );
+        System.out.println("Waiting Orders: " + waitingCount);
 
-        System.out.println("============================");
+        System.out.println("================================");
     }
 
 
     /**
-     * Displays a success or error message.
+     * Displays a message received from the controller.
      *
-     * @param message message to display
+     * @param message success or error message
      */
     @Override
     public void showMessage(String message)
