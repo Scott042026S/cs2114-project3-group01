@@ -1,5 +1,7 @@
 
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Provides a console-based interface for
@@ -108,19 +110,39 @@ public class OrderTrackerView implements OrderTrackerDisplay
         System.out.print("Enter table number: ");
         String tableText = scanner.nextLine();
 
-        System.out.print("Enter order description: ");
-        String description = scanner.nextLine();
+        for (String line : controller.getMenuLines())
+        {
+            System.out.println(line);
+        }
 
-        System.out.println();
-        System.out.println("Select order mode:");
+        List<String> dishChoices = new ArrayList<>();
+        List<String> quantityTexts = new ArrayList<>();
+
+        while (true)
+        {
+            System.out.print("Dish number (0 to finish): ");
+            String dishChoice = scanner.nextLine().trim();
+            if (dishChoice.equals("0"))
+            {
+                break;
+            }
+
+            System.out.print("Quantity: ");
+            String quantityText = scanner.nextLine().trim();
+
+            dishChoices.add(dishChoice);
+            quantityTexts.add(quantityText);
+        }
+
+        System.out.print("Notes (optional): ");
+        String notes = scanner.nextLine();
+
         System.out.println("1. Normal");
         System.out.println("2. Rush");
-
-        System.out.print("Enter choice: ");
+        System.out.print("Select order mode: ");
         String modeChoice = scanner.nextLine().trim();
 
         OrderMode mode = null;
-
         if (modeChoice.equals("1"))
         {
             mode = OrderMode.NORMAL;
@@ -131,10 +153,7 @@ public class OrderTrackerView implements OrderTrackerDisplay
         }
 
         controller.handleAddOrder(
-            tableText,
-            description,
-            mode
-        );
+            tableText, dishChoices, quantityTexts, notes, mode);
     }
 
 
