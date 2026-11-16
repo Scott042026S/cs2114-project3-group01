@@ -1,39 +1,47 @@
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
  * One restaurant order.
  *
+ * <p>An order has one or more dishes and can have notes.
+ *
  * <p>Every order starts as WAITING. The kitchen can start it and then it gets
  * served, or it can be cancelled before the kitchen starts it.
  *
  * @author Archer Kim
- * @version 11/08/2026
+ * @version 11/16/2026
  */
 public class Order {
 
     /** Highest table number in the restaurant. */
     public static final int MAX_TABLES = 50;
 
-    /** Longest description allowed. */
+    /** Longest notes allowed. */
     public static final int MAX_DESCRIPTION_LENGTH = 100;
 
     /** Message shown for a bad table number. */
     public static final String INVALID_TABLE_MESSAGE =
         "Enter a table number from 1 to " + MAX_TABLES;
 
-    /** Message shown for a bad description. */
-    public static final String INVALID_DESCRIPTION_MESSAGE =
-        "Enter a valid order description";
+    /** Message shown for bad dishes. */
+    public static final String INVALID_ITEMS_MESSAGE =
+        "Add at least one dish";
 
-    /**
-     * Characters allowed in a description: letters, numbers, spaces, and
-     * , . ' - &amp; ( ) /
-     */
+    /** Message shown for bad notes. */
+    public static final String INVALID_DESCRIPTION_MESSAGE =
+        "Notes can be up to " + MAX_DESCRIPTION_LENGTH
+            + " letters, numbers, spaces, and , . ' - & ( ) /";
+
+    /** Characters allowed in notes. */
     private static final Pattern ALLOWED_DESCRIPTION =
         Pattern.compile("[\\p{L}\\p{N} ,.'&()/\\-]+");
 
     private final int orderId;
     private final int tableNumber;
+    private final Map<String, Integer> items;
     private final String description;
     private final boolean rush;
     private boolean kitchenStarted;
@@ -44,55 +52,71 @@ public class Order {
      *
      * @param orderId     the order's ID (1 or more)
      * @param tableNumber the table number (1 to 50)
-     * @param description what was ordered
+     * @param items       the dishes and how many of each
+     * @param notes       extra notes, can be blank
      * @param rush        true if this is a rush order
      * @throws IllegalArgumentException if any input is invalid
      */
-    public Order(int orderId, int tableNumber, String description,
-        boolean rush) {
+    public Order(int orderId, int tableNumber, Map<String, Integer> items,
+        String notes, boolean rush) {
         if (orderId < 1) {
             throw new IllegalArgumentException(
                 "Order ID must be 1 or more, was " + orderId);
         }
-        validate(tableNumber, description);
+        validate(tableNumber, items, notes);
         this.orderId = orderId;
         this.tableNumber = tableNumber;
-        this.description = description.trim();
+        // save a copy of the dishes that can't be changed
+        this.items = Collections.unmodifiableMap(
+            new LinkedHashMap<String, Integer>(items));
+        this.description = cleanNotes(notes);
         this.rush = rush;
         this.kitchenStarted = false;
         this.status = OrderStatus.WAITING;
     }
 
     /**
-     * Checks that a table number and description are valid.
+     * Checks that a table number, dishes, and notes are valid.
      *
-     * @param tableNumber the table number to check
-     * @param description the description to check
-     * @throws IllegalArgumentException if either one is invalid
+     * @param tableNumber the table number
+     * @param items       the dishes and how many of each
+     * @param notes       extra notes, can be blank
+     * @throws IllegalArgumentException if anything is invalid
      */
-    public static void validate(int tableNumber, String description) {
+    public static void validate(int tableNumber, Map<String, Integer> items,
+        String notes) {
         if (tableNumber < 1 || tableNumber > MAX_TABLES) {
             throw new IllegalArgumentException(INVALID_TABLE_MESSAGE);
         }
-        if (description == null) {
-            throw new IllegalArgumentException(INVALID_DESCRIPTION_MESSAGE);
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException(INVALID_ITEMS_MESSAGE);
         }
-        String trimmed = description.trim();
-        if (trimmed.isEmpty()
-            || trimmed.length() > MAX_DESCRIPTION_LENGTH
-            || !ALLOWED_DESCRIPTION.matcher(trimmed).matches()) {
+        for (Map.Entry<String, Integer> item : items.entrySet()) {
+            String dish = item.getKey();
+            Integer quantity = item.getValue();
+            if (dish == null || dish.trim().isEmpty()) {
+                throw new IllegalArgumentException(INVALID_ITEMS_MESSAGE);
+            }
+            if (quantity == null || quantity < 1) {
+                throw new IllegalArgumentException(
+                    "Quantity for " + dish + " must be 1 or more");
+            }
+        }
+        String trimmed = cleanNotes(notes);
+        if (!trimmed.isEmpty()
+            && (trimmed.length() > MAX_DESCRIPTION_LENGTH
+                || !ALLOWED_DESCRIPTION.matcher(trimmed).matches())) {
             throw new IllegalArgumentException(INVALID_DESCRIPTION_MESSAGE);
         }
     }
 
     /**
-     * Checks that this order's table number and description are valid.
-     * This always passes, because the constructor already checked them.
+     * Checks that this order is valid.
      *
-     * @throws IllegalArgumentException if either one is invalid
+     * @throws IllegalArgumentException if anything is invalid
      */
     public void validate() {
-        validate(tableNumber, description);
+        validate(tableNumber, items, description);
     }
 
     /**
@@ -114,9 +138,29 @@ public class Order {
     }
 
     /**
-     * Gets what was ordered.
+     * Gets the dishes on this order.
      *
-     * @return the description
+     * @return the dishes and how many of each
+     */
+    public Map<String, Integer> getItems() {
+        return items;
+    }
+
+    /**
+     * Gets how many of one dish are on this order.
+     *
+     * @param dish the dish name
+     * @return how many, or 0 if it's not on the order
+     */
+    public int getQuantity(String dish) {
+        Integer quantity = items.get(dish);
+        return (quantity == null) ? 0 : quantity;
+    }
+
+    /**
+     * Gets the notes.
+     *
+     * @return the notes, or "" if there are none
      */
     public String getDescription() {
         return description;
@@ -245,6 +289,16 @@ public class Order {
     }
 
     /**
+     * Trims the notes. Null becomes "".
+     *
+     * @param notes the notes
+     * @return the trimmed notes
+     */
+    private static String cleanNotes(String notes) {
+        return (notes == null) ? "" : notes.trim();
+    }
+
+    /**
      * Returns the order as text, for debugging.
      *
      * @return the order as text
@@ -252,7 +306,9 @@ public class Order {
     @Override
     public String toString() {
         return "#" + orderId + " table " + tableNumber
-            + (rush ? " RUSH" : "") + " \"" + description + "\" " + status
+            + (rush ? " RUSH" : "") + " " + items
+            + (description.isEmpty() ? "" : " \"" + description + "\"")
+            + " " + status
             + (kitchenStarted && status == OrderStatus.WAITING
                 ? " (cooking)" : "");
     }
