@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * The line of orders for the kitchen.
@@ -17,7 +18,7 @@ import java.util.Locale;
  * (enqueue, dequeue, peek, size, getOrdersInServeOrder) both work.
  *
  * @author Archer Kim
- * @version 11/08/2026
+ * @version 11/16/2026
  */
 public class OrderQueue {
 
@@ -38,21 +39,22 @@ public class OrderQueue {
      * Adds a new order to the back of the rush or normal line.
      *
      * @param tableNumber the table number
-     * @param description what was ordered
+     * @param items       the dishes and how many of each
+     * @param notes       extra notes, can be blank
      * @param rush        true for a rush order
      * @return the new order
-     * @throws IllegalArgumentException if the table number or description is
-     *                                  invalid
+     * @throws IllegalArgumentException if anything is invalid
      * @throws IllegalStateException    if the table already has the same
      *                                  order waiting
      */
-    public Order enqueue(int tableNumber, String description, boolean rush) {
-        Order.validate(tableNumber, description);
-        if (hasWaitingOrder(tableNumber, description)) {
+    public Order enqueue(int tableNumber, Map<String, Integer> items,
+        String notes, boolean rush) {
+        Order.validate(tableNumber, items, notes);
+        if (hasWaitingOrder(tableNumber, items, notes)) {
             throw new IllegalStateException(
                 "Table " + tableNumber + " already has that order waiting");
         }
-        Order order = new Order(nextOrderId, tableNumber, description, rush);
+        Order order = new Order(nextOrderId, tableNumber, items, notes, rush);
         nextOrderId++;
         addToLine(order);
         return order;
@@ -60,7 +62,7 @@ public class OrderQueue {
 
     /**
      * Adds an order that was already created. Give it the next ID, like
-     * {@code new Order(queue.getNextOrderId(), table, description, rush)}.
+     * {@code new Order(queue.getNextOrderId(), table, items, notes, rush)}.
      *
      * @param order the new order
      * @return the order that was added
@@ -81,7 +83,8 @@ public class OrderQueue {
             throw new IllegalArgumentException(
                 "Order ID " + order.getOrderId() + " was already used");
         }
-        if (hasWaitingOrder(order.getTableNumber(), order.getDescription())) {
+        if (hasWaitingOrder(order.getTableNumber(), order.getItems(),
+            order.getDescription())) {
             throw new IllegalStateException("Table " + order.getTableNumber()
                 + " already has that order waiting");
         }
@@ -188,20 +191,21 @@ public class OrderQueue {
     }
 
     /**
-     * Checks if a table already has the same order in the queue. Capital
-     * letters and extra spaces are ignored.
+     * Checks if a table already has the same dishes and notes waiting.
      *
      * @param tableNumber the table number
-     * @param description what was ordered
-     * @return true if a matching order is found
+     * @param items       the dishes and how many of each
+     * @param notes       extra notes, can be blank
+     * @return true if a match is found
      */
-    public boolean hasWaitingOrder(int tableNumber, String description) {
-        if (description == null) {
+    public boolean hasWaitingOrder(int tableNumber, Map<String, Integer> items,
+        String notes) {
+        if (items == null) {
             return false;
         }
-        String target = normalize(description);
-        return containsMatch(rushOrders, tableNumber, target)
-            || containsMatch(normalOrders, tableNumber, target);
+        String targetNotes = normalize(notes);
+        return containsMatch(rushOrders, tableNumber, items, targetNotes)
+            || containsMatch(normalOrders, tableNumber, items, targetNotes);
     }
 
     /**
@@ -343,18 +347,20 @@ public class OrderQueue {
     }
 
     /**
-     * Checks if a deque has an order with this table and description.
+     * Checks if a deque has an order with this table, dishes, and notes.
      *
      * @param orders      the deque to search
      * @param tableNumber the table number
-     * @param target      the cleaned-up description
+     * @param items       the dishes and how many of each
+     * @param targetNotes the cleaned-up notes
      * @return true if a match is found
      */
     private static boolean containsMatch(Deque<Order> orders, int tableNumber,
-        String target) {
+        Map<String, Integer> items, String targetNotes) {
         for (Order order : orders) {
             if (order.getTableNumber() == tableNumber
-                && normalize(order.getDescription()).equals(target)) {
+                && order.getItems().equals(items)
+                && normalize(order.getDescription()).equals(targetNotes)) {
                 return true;
             }
         }
@@ -378,13 +384,15 @@ public class OrderQueue {
     }
 
     /**
-     * Cleans up a description so it can be compared: trims it, removes
-     * extra spaces, and makes it lowercase.
+     * Cleans up notes so they can be compared. Null becomes "".
      *
-     * @param text the description
-     * @return the cleaned-up description
+     * @param text the notes
+     * @return the cleaned-up notes
      */
     private static String normalize(String text) {
+        if (text == null) {
+            return "";
+        }
         return text.trim().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
     }
 }
