@@ -1,9 +1,11 @@
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * The line of orders for the kitchen.
@@ -56,6 +58,42 @@ public class OrderQueue {
         nextOrderId++;
         addToLine(order);
         return order;
+    }
+    
+    /**
+     * Enqueues selected dishes with optional notes.
+     * @param tableNumber the table number
+     * @param items dish names and quantities
+     * @param notes optional preparation instructions
+     * @param rush whether the order is urgent
+     * @return the newly enqueued order
+     */
+    public Order enqueue(int tableNumber, Map<String, Integer> items,
+        String notes, boolean rush) {
+        return addOrder(new Order(nextOrderId, tableNumber, items, notes, rush));
+    }
+
+    private boolean hasDuplicate(Order order) {
+        if (order.getItems().isEmpty()) {
+            return hasWaitingOrder(order.getTableNumber(), order.getDescription());
+        }
+        for (Order waiting : getOrdersInServeOrder()) {
+            if (waiting.getTableNumber() == order.getTableNumber()
+                && sameItemsAndNotes(waiting, order)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean sameItemsAndNotes(Order waiting, Order order) {
+        if (waiting.getItems().isEmpty()) {
+            return order.getNotes().isEmpty()
+                && normalize(waiting.getDescription())
+                    .equals(normalize(order.getDescription()));
+        }
+        return waiting.getItems().equals(order.getItems())
+            && normalize(waiting.getNotes()).equals(normalize(order.getNotes()));
     }
 
     /**
