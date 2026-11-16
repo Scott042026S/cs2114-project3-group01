@@ -1,3 +1,4 @@
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -391,20 +392,10 @@ public class OrderTrackerController
         StringBuilder text = new StringBuilder();
         text.append("order #").append(order.getOrderId()).append(" (table ")
             .append(order.getTableNumber()).append("): ");
-        boolean first = true;
-        for (Map.Entry<String, Integer> item : order.getItems().entrySet())
+        text.append(order.getDescription());
+        if (!order.getNotes().isEmpty())
         {
-            if (!first)
-            {
-                text.append(", ");
-            }
-            text.append(item.getValue()).append(" ").append(item.getKey());
-            first = false;
-        }
-        String notes = order.getDescription();
-        if (notes != null && !notes.isEmpty())
-        {
-            text.append(" (").append(notes).append(")");
+            text.append(" (").append(order.getNotes()).append(")");
         }
         if (order.isRush())
         {
